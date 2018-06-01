@@ -41,6 +41,22 @@ CreateModel <- function(strain, data, group){
   return(fit)
 }
 
+  CreateGeneSetsFile <- function(){
+    subclasses <- as.character(unique(Annotation$subclass))
+    subclasses <- subclasses[!(duplicated(tolower(subclasses)))]
+    subclasses <- subclasses[subclasses != ""]
+    
+    gene_sets <- data.frame(All=row.names(Annotation))
+    for(index in 1:length(subclasses)){
+      temp_subset <- subset(Annotation, Annotation$subclass==subclasses[index])['subclass']
+      genes <- c(NA, row.names(temp_subset))
+      gene_sets$col <- c(genes, rep('', nrow(gene_sets)-length(genes)))
+      names(gene_sets)[index+1] = subclasses[index]
+    }
+    gene_sets <- subset(gene_sets, select = -c(All))
+    write.table(gene_sets, file='Results/gene_sets.gmx', row.names=F, quote=F, sep='\t')
+  }
+
 DataProcessing <- function(group, start, stop, cpm_filter){
   # Create DGEList object for storage of RNA-Seq data.
   y <- DGEList(counts=Counts[,start:stop], group=group)
@@ -135,6 +151,9 @@ WriteResults <- function(file_name, annotated_results, sheet_name_1, or_pathways
   write.xlsx(or_pathways, file=file_name, sheetName=sheet_name_2, col.names=TRUE, row.names=TRUE, append=TRUE, showNA=TRUE)
   write.xlsx(pathways_de_genes, file=file_name, sheetName=sheet_name_3, col.names=TRUE, row.names=FALSE, append=TRUE, showNA=FALSE)
 }
+
+# CREATE GSEA INPUT FILES
+CreateGeneSetsFile()
 
 # VISUALIZE AND CHECK SEPARATION OF SAMPLES ON GROWTH MEDIUM AND STRAIN
 All_group <- CreateGroup(c('WCFS1.glc', 'WCFS1.rib', 'NC8.glc', 'NC8.rib'))
