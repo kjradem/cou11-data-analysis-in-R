@@ -10,7 +10,7 @@ library('edgeR')
 library('KEGGREST')
 library('xlsx')
 
-# LOAD DATA FROM FILES
+# LOAD DATA
 Counts <- read.delim('Data/RNA-Seq-counts.txt', header=TRUE, skip=1, row.names=1)
 Annotation <- read.delim('Data/RNA-Seq-annotation.txt', header=TRUE, skip=1, row.names=1)
 
@@ -23,7 +23,6 @@ CreateGroup <- function(conditions){
   # Store experimental conditions.
   exp <- rep(conditions, each=2)
   group <- factor(exp)
-  
   return(group)
 }
 
@@ -31,7 +30,6 @@ CreateModel <- function(strain, data, group){
   # Group samples by condition into design matrix.
   design <- model.matrix(~0+group, data=data$samples)
   colnames(design) <- levels(data$samples$group)
-  
   # Create model for top differentially expressed genes.
   fit <- glmFit(data, design)
   if(strain == 'WCFS1'){
@@ -46,19 +44,15 @@ CreateModel <- function(strain, data, group){
 DataProcessing <- function(group, start, stop, cpm_filter){
   # Create DGEList object for storage of RNA-Seq data.
   y <- DGEList(counts=Counts[,start:stop], group=group)
-  
   # Filter out genes below cpm_filter.
   keep.genes <- rowSums(cpm(y)>cpm_filter) >= 2
   y <- y[keep.genes,]
   y$samples$lib.size <- colSums(y$counts)
-  
   # Determine scale factors using Trimmed Mean of M-values (TMM).
   y <- calcNormFactors(y, method='TMM')
-  
   # Group samples by condition into design matrix.
   design <- model.matrix(~0+group, data=y$samples)
   colnames(design) <- levels(y$samples$group)
-  
   # Estimate dispersions.
   y <- estimateGLMCommonDisp(y,design)
   y <- estimateGLMTrendedDisp(y,design, method='power')
@@ -76,7 +70,6 @@ PlotSampleDistances <- function(title, data, group){
   par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
   pch <- rep(c(PCH_1, PCH_2), length(levels(group)))
   pch_legend <- rep(c(16, 18), length(levels(group))/2)
-  
   # Visualize plot.
   plotMDS(data, bg=colors[group], cex=2, col=1, pch=pch[group], xlab='Dimension 1', ylab='Dimension 2')
   title(title, line=0.5)
@@ -101,7 +94,6 @@ GetPathwaysForGenes <- function(genes){
   }
   pathways_genes <- data.frame(matrix(ncol = length(rows_genes), nrow = n_pathways))
   colnames(pathways_genes) <- rows_genes
-  
   # Store pathways per gene in dataframe.
   for(i in 1:length(rows_genes)){
     gene <- rows_genes[i]
@@ -149,24 +141,32 @@ All_group <- CreateGroup(c('WCFS1.glc', 'WCFS1.rib', 'NC8.glc', 'NC8.rib'))
 All_data <- DataProcessing(All_group, 1, 8, CPM)
 PlotSampleDistances('Distances between RNA-Seq samples', All_data, All_group)
 
-# RUN ANALYSIS FOR WCFS1
+# PROCESS DATA
 WCFS1_group <- CreateGroup(c('WCFS1.glc', 'WCFS1.rib'))
 WCFS1_data <- DataProcessing(WCFS1_group, 1, 4, CPM)
-fit <- CreateModel('WCFS1', WCFS1_data, WCFS1_group)
-WCFS1_de_genes <- DetermineDEGenes(fit, nrow(WCFS1_data))
-pathways_de_genes <- GetPathwaysForGenes(de_genes)
-overrep_pathways <- DeterminePathwayOverrep(fit, Inf)
-annotated_results <- AnnotateDEGEnes(de_genes)
-PlotSampleDistances('Distances between WCFS1 RNA-Seq samples', WCFS1_data, WCFS1_group)
-WriteResults('Results/RNA_Seq_analysis_results.xlsx', annotated_results, 'WCFS1 DE genes', overrep_pathways, 'WCFS1 Overrep pathways', pathways_de_genes, 'WCFS1 DE genes pathways')
+WCFS1_fit <- CreateModel('WCFS1', WCFS1_data, WCFS1_group)
 
-# RUN ANALYSIS FOR NC8
 NC8_group <- CreateGroup(c('NC8.glc', 'NC8.rib'))
 NC8_data <- DataProcessing(NC8_group, 5, 8, CPM)
-fit <- CreateModel('NC8', NC8_data, NC8_group)
-NC8_de_genes <- DetermineDEGenes(fit, nrow(NC8_data))
-pathways_de_genes <- GetPathwaysForGenes(de_genes)
-overrep_pathways <- DeterminePathwayOverrep(fit, Inf)
-annotated_results <- AnnotateDEGEnes(de_genes)
+NC8_fit <- CreateModel('NC8', NC8_data, NC8_group)
+
+# DETERMINE DE GENES
+WCFS1_de_genes <- DetermineDEGenes(WCFS1_fit, nrow(WCFS1_data))
+WCFS1_pathways_de_genes <- GetPathwaysForGenes(WCFS1_de_genes)
+
+NC8_de_genes <- DetermineDEGenes(NC8_fit, nrow(NC8_data))
+NC8_pathways_de_genes <- GetPathwaysForGenes(NC8_de_genes)
+
+# VALIDATE RESULTS
+WCFS1_overrep_pathways <- DeterminePathwayOverrep(WCFS1_fit, Inf)
+WCFS1_annotated_results <- AnnotateDEGEnes(WCFS1_de_genes)
+PlotSampleDistances('Distances between WCFS1 RNA-Seq samples', WCFS1_data, WCFS1_group)
+
+NC8_overrep_pathways <- DeterminePathwayOverrep(NC8_fit, Inf)
+NC8_annotated_results <- AnnotateDEGEnes(NC8_de_genes)
 PlotSampleDistances('Distances between NC8 RNA-Seq samples', NC8_data, NC8_data)
-WriteResults('Results/RNA_Seq_analysis_results.xlsx', annotated_results, 'NC8 DE genes', overrep_pathways, 'NC8 Overrep pathways', pathways_de_genes, 'NC8 DE genes pathways')
+
+# EXPORT RESULTS
+WriteResults('Results/RNA_Seq_analysis_results.xlsx', WCFS1_annotated_results, 'WCFS1 DE genes', WCFS1_overrep_pathways, 'WCFS1 Overrep pathways', WCFS1_pathways_de_genes, 'WCFS1 DE genes pathways')
+
+WriteResults('Results/RNA_Seq_analysis_results.xlsx', NC8_annotated_results, 'NC8 DE genes', NC8_overrep_pathways, 'NC8 Overrep pathways', pathways_de_genes, 'NC8 DE genes pathways')
