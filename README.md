@@ -26,6 +26,8 @@ reply to this with:
 
 <h2>Workflow</h2>
 
+![alt text](https://raw.github.com/kjradem/cou11-data-analysis-in-R/master/Data/Legend.png)
+
 <h2>Usage</h2>
 
 <h2>Functions</h2>
