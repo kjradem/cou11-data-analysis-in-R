@@ -1,9 +1,12 @@
 # INSTALLATION (OPTIONAL) AND LOADING REQUIRED PACKAGES
 source('http://bioconductor.org/biocLite.R')
-required_packages <- c('edgeR', 'xlsx', 'KEGGREST')
-for(package in required_packages){
-  if(is.element(package, installed.packages()[,1])){
-    biocLite(package)
+if(is.element('biocLite', installed.packages()[,1])==FALSE){
+  biocLite()
+}
+required_libraries <- c('edgeR', 'xlsx', 'KEGGREST')
+for(library in required_libraries){
+  if(is.element(library, installed.packages()[,1])==FALSE){
+    biocLite(pkgs=library)
   }
 }
 library('edgeR')
@@ -39,6 +42,38 @@ CreateModel <- function(strain, data, group){
   }
   fit <- glmLRT(fit, contrast=mc)
   return(fit)
+}
+
+CreateGeneSetsFile <- function(){
+  max_nrow = 0
+  # Load unique subclasses from Annotation, filter out duplicate/null values.
+  subclasses <- as.character(unique(Annotation$subclass))
+  subclasses <- subclasses[!(duplicated(tolower(subclasses)))]
+  subclasses <- subclasses[subclasses != ""]
+  # Get corresponding genes per subclass, store in data frame and write to .gmx file.
+  df <- data.frame(All=row.names(Annotation))
+  for(index in 1:length(subclasses)){
+    temp_subset <- subset(Annotation, Annotation$subclass==subclasses[index])['subclass']
+    genes <- c(NA, row.names(temp_subset))
+    df$col <- c(genes, rep('', nrow(df)-length(genes)))
+    names(df)[index+1] = subclasses[index]
+    if(nrow(temp_subset) > max_nrow){
+      max_nrow = nrow(temp_subset)
+    }
+  }
+  df <- subset(df, select = -c(All))
+  df <- df[-c(max_nrow+2:nrow(df)), ]
+  write.table(df, file='Results/gsea_gene_sets.gmx', row.names=F, quote=F, sep='\t')
+}
+
+CreateGeneExpressionFile <- function(df_1, df_2, names){
+  # Combine expression data of shared genes for two conditions, store in data frame and write to .txt file.
+  shared_genes <- intersect(row.names(df_1), row.names(df_2))
+  df_1 <- as.data.frame(df_1[row.names(df_1) %in% shared_genes,])
+  df_2 <- as.data.frame(df_2[row.names(df_2) %in% shared_genes,])
+  df <- cbind(shared_genes, NA, df_1, df_2, row.names=shared_genes)
+  colnames(df) <- c('NAME', 'DESCRIPTION', names)
+  write.table(df, file='Results/gsea_gene_expression.txt', row.names=F, quote=F, sep='\t')
 }
 
 DataProcessing <- function(group, start, stop, cpm_filter){
@@ -141,32 +176,40 @@ All_group <- CreateGroup(c('WCFS1.glc', 'WCFS1.rib', 'NC8.glc', 'NC8.rib'))
 All_data <- DataProcessing(All_group, 1, 8, CPM)
 PlotSampleDistances('Distances between RNA-Seq samples', All_data, All_group)
 
-# PROCESS DATA
+
+# PROCESS DATA - WCFS1
 WCFS1_group <- CreateGroup(c('WCFS1.glc', 'WCFS1.rib'))
 WCFS1_data <- DataProcessing(WCFS1_group, 1, 4, CPM)
 WCFS1_fit <- CreateModel('WCFS1', WCFS1_data, WCFS1_group)
-
+# PROCESS DATA - NC8
 NC8_group <- CreateGroup(c('NC8.glc', 'NC8.rib'))
 NC8_data <- DataProcessing(NC8_group, 5, 8, CPM)
 NC8_fit <- CreateModel('NC8', NC8_data, NC8_group)
 
-# DETERMINE DE GENES
+
+# DETERMINE DE GENES AND PATHWAYS - WCFS1
 WCFS1_de_genes <- DetermineDEGenes(WCFS1_fit, nrow(WCFS1_data))
 WCFS1_pathways_de_genes <- GetPathwaysForGenes(WCFS1_de_genes)
-
+# DETERMINE DE GENES AND PATHWAYS - NC8
 NC8_de_genes <- DetermineDEGenes(NC8_fit, nrow(NC8_data))
 NC8_pathways_de_genes <- GetPathwaysForGenes(NC8_de_genes)
 
-# VALIDATE RESULTS
+
+# VALIDATE RESULTS - WCFS1
 WCFS1_overrep_pathways <- DeterminePathwayOverrep(WCFS1_fit, Inf)
 WCFS1_annotated_results <- AnnotateDEGEnes(WCFS1_de_genes)
 PlotSampleDistances('Distances between WCFS1 RNA-Seq samples', WCFS1_data, WCFS1_group)
-
+# VALIDATE RESULTS - NC8
 NC8_overrep_pathways <- DeterminePathwayOverrep(NC8_fit, Inf)
 NC8_annotated_results <- AnnotateDEGEnes(NC8_de_genes)
 PlotSampleDistances('Distances between NC8 RNA-Seq samples', NC8_data, NC8_data)
 
+
 # EXPORT RESULTS
 WriteResults('Results/RNA_Seq_analysis_results.xlsx', WCFS1_annotated_results, 'WCFS1 DE genes', WCFS1_overrep_pathways, 'WCFS1 Overrep pathways', WCFS1_pathways_de_genes, 'WCFS1 DE genes pathways')
-
 WriteResults('Results/RNA_Seq_analysis_results.xlsx', NC8_annotated_results, 'NC8 DE genes', NC8_overrep_pathways, 'NC8 Overrep pathways', pathways_de_genes, 'NC8 DE genes pathways')
+
+
+# CREATE GSEA INPUT FILES
+CreateGeneSetsFile()
+CreateGeneExpressionFile(as.data.frame(WCFS1_de_genes$table['logFC']), as.data.frame(NC8_de_genes$table['logFC']), c('WCFS1', 'NC8'))
