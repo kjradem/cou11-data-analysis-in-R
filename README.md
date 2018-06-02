@@ -15,13 +15,17 @@ Software:
 
 Libraries (installation automatically performed by script):
 
+* Bioconductor version 3.7
 * edgeR version 3.20.9
 * KEGGREST version 1.18.1
 * xlsx version 0.5.7
 
 Required libraries are loaded automatically, missing libraries are installed automatically. During installation the following console output may appear:
+
 ```Update all/some/none? [a/s/n]:```
+
 reply to this with:
+
 ```a```
 
 <h2>Workflow</h2>
