@@ -115,6 +115,36 @@ PlotSampleDistances <- function(title, data, group){
   legend('topright', col=colors, inset=c(-0.33,0), legend=levels(group), ncol=1, pch=pch_legend, title='Samples')
 }
 
+PlotHeatMap <- function(WCFS1_df, NC8_df, n_genes){
+  # Cuts data frames down to selected number of genes.
+  WCFS1_df <- WCFS1_df[1:n_genes,]
+  NC8_df <- NC8_df[1:n_genes,]
+  shared_genes <- intersect(row.names(WCFS1_df), row.names(NC8_df))
+  # Reduces data frames to only contain shared genes.
+  WCFS1_df <- as.data.frame(WCFS1_df[row.names(WCFS1_df) %in% shared_genes,])
+  NC8_df <- as.data.frame(NC8_df[row.names(NC8_df) %in% shared_genes,])
+  # Combines data frames into single data frame and provides annotation.
+  annotation_df <- as.data.frame(Annotation[row.names(Annotation) %in% shared_genes,])
+  annotation_df <- subset(annotation_df, select=c('name', 'subclass'))
+  df <- cbind(WCFS1_df['logFC'], NC8_df['logFC'], row.names=shared_genes)
+  annotation_df <- cbind(df, annotation_df[rownames(df),], row.names=shared_genes)
+  # Visualizes heat map and sets column and row names.
+  rownames(df) <- paste(annotation_df[,"name"], annotation_df[,"subclass"], sep=' - ')
+  colnames(df) <- c('WCFS1', 'NC8')
+  color_palette <- colorRampPalette(c("green","blue"))(n = 64)
+  heatmap.2(as.matrix(df),
+            adjCol=c(NA, 0.5),
+            cexCol=1.5,
+            col=color_palette,
+            Colv=F,
+            dendrogram='none',
+            density.info='none',
+            margins=c(3,22),
+            notecol='black',
+            srtCol=0,
+            trace='none')
+}
+
 GetPathwaysForGenes <- function(genes){
   # Set up data frame.
   cols <- rownames(genes)
@@ -192,11 +222,14 @@ NC8_pathways_de_genes <- GetPathwaysForGenes(NC8_de_genes)
 # VALIDATE RESULTS - WCFS1
 WCFS1_overrep_pathways <- DeterminePathwayOverrep(WCFS1_fit, Inf)
 WCFS1_annotated_results <- AnnotateDEGEnes(WCFS1_de_genes)
-PlotSampleDistances('Distances between WCFS1 RNA-Seq samples', WCFS1_data, WCFS1_group)
 # VALIDATE RESULTS - NC8
 NC8_overrep_pathways <- DeterminePathwayOverrep(NC8_fit, Inf)
 NC8_annotated_results <- AnnotateDEGEnes(NC8_de_genes)
+
+# PLOT DATA
+PlotSampleDistances('Distances between WCFS1 RNA-Seq samples', WCFS1_data, WCFS1_group)
 PlotSampleDistances('Distances between NC8 RNA-Seq samples', NC8_data, NC8_data)
+PlotHeatMap(as.data.frame(WCFS1_de_genes$table), as.data.frame(NC8_de_genes$table), 50)
 
 # EXPORT RESULTS
 WriteResults('Results/RNA_Seq_analysis_results.xlsx', WCFS1_annotated_results, 'WCFS1 DE genes', WCFS1_overrep_pathways, 'WCFS1 Overrep pathways', WCFS1_pathways_de_genes, 'WCFS1 DE genes pathways')
