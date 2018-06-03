@@ -3,14 +3,18 @@ source('http://bioconductor.org/biocLite.R')
 if(is.element('biocLite', installed.packages()[,1])==FALSE){
   biocLite()
 }
-required_libraries <- c('edgeR', 'xlsx', 'KEGGREST')
+required_libraries <- c('DBI', 'edgeR', 'gplots', 'KEGGREST', 'KEGG.db', 'RColorBrewer', 'xlsx')
 for(library in required_libraries){
   if(is.element(library, installed.packages()[,1])==FALSE){
     biocLite(pkgs=library)
   }
 }
+library('DBI')
 library('edgeR')
+library('gplots')
 library('KEGGREST')
+library('KEGG.db')
+library('RColorBrewer')
 library('xlsx')
 
 # LOAD DATA
@@ -112,37 +116,30 @@ PlotSampleDistances <- function(title, data, group){
 }
 
 GetPathwaysForGenes <- function(genes){
-  # Set up dataframe.
-  rows_genes <- rownames(genes)
-  n_pathways <- 0
-  for(i in 1:length(rows_genes)){
-    gene <- rows_genes[i]
+  # Set up data frame.
+  cols <- rownames(genes)
+  n_pathways <- dbGetQuery(KEGG_dbconn(), 'SELECT COUNT(*) FROM pathway2name')[1,1]
+  df <- data.frame(matrix(ncol=length(cols), nrow=n_pathways))
+  colnames(df) <- cols
+  # Store pathways per gene in data frame.
+  max_n_pathways = 0
+  for(index in 1:length(cols)){
+    gene <- cols[index]
     try(query <- keggGet(c(paste('lpl:', gene, sep=''))), silent=F)
     if(exists('query')){
       pathways <- query[[1]]$PATHWAY
       if(!is.null(pathways)){
-        if(length(pathways) > n_pathways){
-          n_pathways = length(pathways)
+        for(index_2 in 1:length(pathways)){
+          df[index_2, index] = pathways[index_2]
+        }
+        if(length(pathways) > max_n_pathways){
+          max_n_pathways = length(pathways)
         }
       }
     }
   }
-  pathways_genes <- data.frame(matrix(ncol = length(rows_genes), nrow = n_pathways))
-  colnames(pathways_genes) <- rows_genes
-  # Store pathways per gene in dataframe.
-  for(i in 1:length(rows_genes)){
-    gene <- rows_genes[i]
-    try(query <- keggGet(c(paste('lpl:', gene, sep=''))), silent=F)
-    if(exists('query')){
-      pathways <- query[[1]]$PATHWAY
-      if(!is.null(pathways)){
-        for(j in 1:length(pathways)){
-          pathways_genes[j, i] = pathways[j]
-        }
-      }
-    }
-  }
-  return(pathways_genes)
+  df <- df[-c(max_n_pathways+1:nrow(df)), ]
+  return(df)
 }
 
 DetermineDEGenes <- function(fit, n_results){
@@ -176,7 +173,6 @@ All_group <- CreateGroup(c('WCFS1.glc', 'WCFS1.rib', 'NC8.glc', 'NC8.rib'))
 All_data <- DataProcessing(All_group, 1, 8, CPM)
 PlotSampleDistances('Distances between RNA-Seq samples', All_data, All_group)
 
-
 # PROCESS DATA - WCFS1
 WCFS1_group <- CreateGroup(c('WCFS1.glc', 'WCFS1.rib'))
 WCFS1_data <- DataProcessing(WCFS1_group, 1, 4, CPM)
@@ -186,14 +182,12 @@ NC8_group <- CreateGroup(c('NC8.glc', 'NC8.rib'))
 NC8_data <- DataProcessing(NC8_group, 5, 8, CPM)
 NC8_fit <- CreateModel('NC8', NC8_data, NC8_group)
 
-
-# DETERMINE DE GENES AND PATHWAYS - WCFS1
+# DETERMINE DE GENES
 WCFS1_de_genes <- DetermineDEGenes(WCFS1_fit, nrow(WCFS1_data))
-WCFS1_pathways_de_genes <- GetPathwaysForGenes(WCFS1_de_genes)
-# DETERMINE DE GENES AND PATHWAYS - NC8
 NC8_de_genes <- DetermineDEGenes(NC8_fit, nrow(NC8_data))
+# DETERMINE PATHWAYS FOR DE GENES
+WCFS1_pathways_de_genes <- GetPathwaysForGenes(WCFS1_de_genes)
 NC8_pathways_de_genes <- GetPathwaysForGenes(NC8_de_genes)
-
 
 # VALIDATE RESULTS - WCFS1
 WCFS1_overrep_pathways <- DeterminePathwayOverrep(WCFS1_fit, Inf)
@@ -204,11 +198,9 @@ NC8_overrep_pathways <- DeterminePathwayOverrep(NC8_fit, Inf)
 NC8_annotated_results <- AnnotateDEGEnes(NC8_de_genes)
 PlotSampleDistances('Distances between NC8 RNA-Seq samples', NC8_data, NC8_data)
 
-
 # EXPORT RESULTS
 WriteResults('Results/RNA_Seq_analysis_results.xlsx', WCFS1_annotated_results, 'WCFS1 DE genes', WCFS1_overrep_pathways, 'WCFS1 Overrep pathways', WCFS1_pathways_de_genes, 'WCFS1 DE genes pathways')
 WriteResults('Results/RNA_Seq_analysis_results.xlsx', NC8_annotated_results, 'NC8 DE genes', NC8_overrep_pathways, 'NC8 Overrep pathways', pathways_de_genes, 'NC8 DE genes pathways')
-
 
 # CREATE GSEA INPUT FILES
 CreateGeneSetsFile()
