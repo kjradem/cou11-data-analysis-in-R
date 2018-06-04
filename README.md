@@ -6,7 +6,7 @@ This pipeline was developed to analyze RNA-Seq data for two Lactobacillus planta
 
 <h2>Installation</h2>
 
-_Versions as of 01/06/2018_
+_Versions as of 04/Jun/2018_
 
 Software:
 
@@ -16,8 +16,12 @@ Software:
 Libraries (installation automatically performed by script):
 
 * Bioconductor version 3.7
+* DBI version 1.0.0
+* gplots version 3.0.1
 * edgeR version 3.20.9
 * KEGGREST version 1.18.1
+* KEGG.db version 3.2.3
+* RColorBrewer version 1.1-2
 * xlsx version 0.5.7
 
 Required libraries are loaded automatically, missing libraries are installed automatically. During installation the following console output may appear:
