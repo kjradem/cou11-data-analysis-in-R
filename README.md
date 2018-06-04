@@ -38,6 +38,14 @@ reply to this with:
 
 <h2>Usage</h2>
 
+This R script can be used to analyse RNA-seq data by:
+ * Determining differentially expressed genes
+ * Creating plots to interpret the difference between the experiments
+ * Creating a heatmap of the most differentially expressed genes
+ * Determining pathways of the genes
+ * Determining overrepresented pathways
+ * Creating the input for a GSEA analysis
+
 <h2>Functions</h2>
 
 <h2>Credits</h2>
