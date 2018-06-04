@@ -185,7 +185,7 @@ DeterminePathwayOverrep <- function(fit, n_results){
   return(top_OR_pathways)
 }
 
-AnnotateDEGEnes <- function(genes){
+AnnotateDEGenes <- function(genes){
   # Annotate DE genes.
   annotated_data <- cbind(genes, Annotation[rownames(genes),])
   return(annotated_data)
@@ -221,10 +221,10 @@ NC8_pathways_de_genes <- GetPathwaysForGenes(NC8_de_genes)
 
 # VALIDATE RESULTS - WCFS1
 WCFS1_overrep_pathways <- DeterminePathwayOverrep(WCFS1_fit, Inf)
-WCFS1_annotated_results <- AnnotateDEGEnes(WCFS1_de_genes)
+WCFS1_annotated_results <- AnnotateDEGenes(WCFS1_de_genes)
 # VALIDATE RESULTS - NC8
 NC8_overrep_pathways <- DeterminePathwayOverrep(NC8_fit, Inf)
-NC8_annotated_results <- AnnotateDEGEnes(NC8_de_genes)
+NC8_annotated_results <- AnnotateDEGenes(NC8_de_genes)
 
 # PLOT DATA
 PlotSampleDistances('Distances between WCFS1 RNA-Seq samples', WCFS1_data, WCFS1_group)
