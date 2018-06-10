@@ -6,7 +6,7 @@ This pipeline was developed to analyze RNA-Seq data for two Lactobacillus planta
 
 <h2>Installation</h2>
 
-_Versions as of 04/Jun/2018_
+_Versions as of 10/Jun/2018_
 
 Software:
 
@@ -21,6 +21,7 @@ Libraries (installation automatically performed by script):
 * edgeR version 3.20.9
 * KEGGREST version 1.18.1
 * KEGG.db version 3.2.3
+* pathview version 1.20.0
 * RColorBrewer version 1.1-2
 * xlsx version 0.5.7
 
