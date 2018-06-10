@@ -45,8 +45,10 @@ This R script can be used to analyse RNA-seq data by:
  * Determining pathways of the genes
  * Determining overrepresented pathways
  * Creating the input for a GSEA analysis
+ * Visualizing differentially expressed genes in KEGG pathways
 
 <h2>Functions</h2>
+
 
 <h2>Credits</h2>
 
