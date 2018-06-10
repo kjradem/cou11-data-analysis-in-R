@@ -46,6 +46,13 @@ This R script can be used to analyse RNA-seq data by:
  * Determining pathways of the genes
  * Determining overrepresented pathways
  * Creating the input for a GSEA analysis
+ 
+<h3>Running the script</h3>
+
+All analysis steps can be found in- and performed with 'data-analysis.r', functions are stored backstage in 'data-analysis-functions.r', which is automatically loaded.
+
+
+It is advised to skip ```DETERMINE PATHWAYS FOR ALL GENES``` (line 55-57) unless necessary, as this may take up to 30 minutes to be performed for all genes. Running ```DETERMINE PATHWAYS FOR DE GENES``` (line 59-61) still yields biologically relevant results.
 
 <h2>Functions</h2>
 
