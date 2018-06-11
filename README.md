@@ -56,6 +56,73 @@ It is advised to skip ```DETERMINE PATHWAYS FOR ALL GENES``` (line 55-57) unless
 
 <h2>Functions</h2>
 
+Brief descriptions of functions can be found below, more detailed and technical commentary on the functions can be found in the source code.
+
+|              | AnnotateGenes |
+| ------------ |:---------------------------------|
+| Description  | Add annotation to gene data      |
+| Returns      | Data frame containing annotation |
+
+|               | CreateGeneExpressionFile |
+| ------------- |:-------------------------------------|
+| Description   | Create gene expression file for GSEA |
+| Returns       | .txt file with gene expression data  |
+
+|             | CreateGeneSetsFile |
+| ----------- |:-------------------------------|
+| Description | Create gene sets file for GSEA |
+| Returns     | .gmx file with gene sets       |
+
+|             | CreateGroup |
+| ----------- |:------------------------------|
+| Description | Store experimental conditions |
+| Returns     | Factor 'group'                |
+
+|             | CreateModel |
+| ----------- |:--------------------|
+| Description | Create glmLRT model |
+| Returns     | glmLRT model        |
+
+|             | DataProcessing |
+| ----------- |:--------------------------------------|
+| Description | Perform various data processing tasks |
+| Returns     | RNA-Seq data as DGEList               |
+
+|             | DetermineDEGenes |
+| ----------- |:----------------------------------------------------------------------|
+| Description | Determine top differentially expressed genes for a given logFC filter |
+| Returns     | Data frame                                                            |
+
+|             | DeterminePathwayOverrep |
+| ----------- |:-------------------------------------------------------|
+| Description | Determine overrepresentation of genes in KEGG pathways |
+| Returns     | topKEGG object                                         |
+
+|             | GetPathwaysForGenes |
+| ----------- |:----------------------------------|
+| Description | Get KEGG pathways for given genes |
+| Returns     | Data frame                        |
+
+|             | PlotHeatMap |
+| ----------- |:-------------------------------------------|
+| Description | Plot logFC values of genes into a heat map |
+| Returns     | heatmap.2 heat map                         |
+
+|             | PlotSampleDistances |
+| ----------- |:----------------------|
+| Description | Plot sample distances |
+| Returns     | plotMDS plot          |
+
+|             | PlotKEGGpathway |
+| ----------- |:-----------------------------------------------------|
+| Description | Plot a given KEGG pathway with logFC values of genes |
+| Returns     | Pathview pathway plot                                |
+
+|             | WriteResults |
+| ----------- |:----------------------------|
+| Description | Write results to Excel file |
+| Returns     | Excel file                  |
+
 <h2>Credits</h2>
 
 Sjors Bongers, Daan Gilissen, Martijn Landman, Koen Rademaker, Ronald van den Hurk
