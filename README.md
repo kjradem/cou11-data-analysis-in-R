@@ -70,7 +70,7 @@ The first row above column names is reserved for comments, annotation attributes
 To run the entire pipeline as it was developed and tested, simply run the script 'data-analysis.r', with functions stores backstage in 'data-analysis-functions.r'.
 
 #### Custom
-To run specific functions of the pipeline, make sure the following segments (indivated by all-caps comments before the code) have been run previously:
+To run specific functions of the pipeline, make sure the following segments (indicated by all-caps comments before the code) have been run previously:
 * INSTALL/LOAD REQUIRED LIBRARIES
 * LOAD FUNCTIONS
 * LOAD DATA
