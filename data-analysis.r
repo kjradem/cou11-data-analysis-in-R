@@ -51,9 +51,9 @@ NC8_fit <- CreateModel('NC8', NC8_data, NC8_group)
 WCFS1_de_genes <- DetermineDEGenes(WCFS1_fit, LOGFC_FILTER)
 NC8_de_genes <- DetermineDEGenes(NC8_fit, LOGFC_FILTER)
 
-# DETERMINE PATHWAYS FOR ALL GENES
-WCFS1_pathways_genes <- GetPathwaysForGenes(WCFS1_fit$table)
-NC8_pathways_genes <- GetPathwaysForGenes(NC8_fit$table)
+# DETERMINE PATHWAYS FOR ALL GENES (TURNED OFF BY DEFAULT)
+# WCFS1_pathways_genes <- GetPathwaysForGenes(WCFS1_fit$table)
+# NC8_pathways_genes <- GetPathwaysForGenes(NC8_fit$table)
 
 # DETERMINE PATHWAYS FOR DE GENES
 WCFS1_pathways_de_genes <- GetPathwaysForGenes(WCFS1_de_genes)
