@@ -22,8 +22,8 @@ library('xlsx')
 source('data-analysis-functions.r')
 
 # LOAD DATA
-Counts <- read.delim('Data/RNA-Seq-counts.txt', header=TRUE, skip=1, row.names=1)
-Annotation <- read.delim('Data/RNA-Seq-annotation.txt', header=TRUE, skip=1, row.names=1)
+Counts <- read.delim(file.choose(), header=TRUE, skip=1, row.names=1)
+Annotation <- read.delim(file.choose(), header=TRUE, skip=1, row.names=1)
 
 # SET GLOBAL VARIABLES
 CPM = 10
