@@ -81,9 +81,23 @@ The function _GetPathwaysForGenes_ in lines 55 and 56 has been commented out on 
 
 ## IV - Workflow
 
-![Workflow](https://raw.github.com/kjradem/cou11-data-analysis-in-R/master/Data/Legend.png)
+![Workflow](https://user-images.githubusercontent.com/24732704/41440050-5b2e301e-702d-11e8-968d-e687a1576897.png)
 
-## V - Functions
+## V - Examples of results
+
+![Distances](https://user-images.githubusercontent.com/24732704/41440203-fca8dfca-702d-11e8-9e40-236d61c83cf0.png)
+
+**Plot sample distances to validate data.**
+
+![Genes](https://user-images.githubusercontent.com/24732704/41440202-fc940c12-702d-11e8-89db-b63d13cddcfb.png)
+
+**Get an overview of differentially expressed genes.**
+
+![Heat map](https://user-images.githubusercontent.com/24732704/41440204-fcbdd39e-702d-11e8-9c16-626880a14e01.png)
+
+**Plot most differentially expressed genes in a heat map.**
+
+## VI - Functions
 
 Brief descriptions of functions can be found below, more detailed and technical commentary on the functions can be found in the source code.
 
@@ -152,6 +166,6 @@ Brief descriptions of functions can be found below, more detailed and technical 
 | Description | Write results to Excel file |
 | Returns     | Excel file                  |
 
-## VI - Credits
+## VII - Credits
 
 Sjors Bongers, Daan Gilissen, Martijn Landman, Koen Rademaker, Ronald van den Hurk
